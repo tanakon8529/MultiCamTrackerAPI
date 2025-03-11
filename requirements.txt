@@ -1,0 +1,22 @@
+# API Framework
+fastapi==0.110.0
+uvicorn==0.29.0
+pydantic==2.5.2
+pydantic-settings==2.1.0
+python-multipart==0.0.9
+email-validator==2.1.1
+
+# MongoDB
+motor==3.3.2
+pymongo==4.6.2
+
+# File handling
+aiofiles==23.2.1
+
+# Computer Vision
+opencv-python==4.9.0.80
+numpy==1.26.4
+
+# Utilities
+python-dateutil==2.8.2
+uuid==1.30
