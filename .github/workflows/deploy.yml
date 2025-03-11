@@ -1,0 +1,141 @@
+name: Deploy MultiCamTrackerAPI (Mock)
+
+# =======================================================================
+# MOCK WORKFLOW FOR DEMONSTRATION PURPOSES
+# =======================================================================
+# This is a DEMONSTRATION workflow that simulates deploying to ECS
+# without actually connecting to any AWS services.
+# 
+# TO IMPLEMENT REAL DEPLOYMENT:
+# 1. Set up AWS IAM credentials with ECS deployment permissions
+# 2. Add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as repository secrets
+# 3. Update the environment variables below to match your AWS environment
+# 4. Remove the echo commands and uncomment the real AWS CLI commands
+# 5. Add a /health endpoint to your API for the health check to work
+# =======================================================================
+
+# Trigger after successful build
+on:
+  workflow_run:
+    workflows: ["Build and Push MultiCamTrackerAPI (Mock)"]
+    types:
+      - completed
+    branches: [ main ]
+
+env:
+  # CUSTOMIZE: Change these variables to match your AWS environment
+  AWS_REGION: us-east-1  # Replace with your AWS region
+  ECS_CLUSTER: multicam-tracker-cluster  # Replace with your ECS cluster name
+  API_SERVICE_NAME: multicam-tracker-api-service  # Replace with your ECS service name
+  TASK_DEFINITION_FAMILY: multicam-tracker-task  # Replace with your task definition family name
+
+jobs:
+  deploy:
+    name: Deploy to ECS (Mock)
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      # Mock AWS credentials configuration
+      - name: Configure AWS credentials (Mock)
+        run: |
+          echo "Simulating AWS credential configuration..."
+          echo "In a real workflow, this would use aws-actions/configure-aws-credentials@v2"
+          # In a real workflow, you would use:
+          # uses: aws-actions/configure-aws-credentials@v2
+          # with:
+          #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          #   aws-region: ${{ env.AWS_REGION }}
+
+      # Mock download of task definition
+      - name: Download task definition (Mock)
+        run: |
+          echo "Simulating downloading task definition from ECS..."
+          echo '{
+            "taskDefinition": {
+              "family": "${{ env.TASK_DEFINITION_FAMILY }}",
+              "containerDefinitions": [
+                {
+                  "name": "multicam-tracker-api",
+                  "image": "mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/multicam-tracker-api:latest",
+                  "essential": true,
+                  "portMappings": [
+                    {
+                      "containerPort": 8000,
+                      "hostPort": 8000,
+                      "protocol": "tcp"
+                    }
+                  ]
+                }
+              ]
+            }
+          }' > task-definition.json
+          echo "Task definition downloaded and saved to task-definition.json"
+          
+          # In a real workflow:
+          # aws ecs describe-task-definition --task-definition $TASK_DEFINITION_FAMILY \
+          # --query taskDefinition > task-definition.json
+
+      # Mock update of container image
+      - name: Update container image (Mock)
+        id: update-image
+        run: |
+          echo "Simulating updating container image in task definition..."
+          
+          # In a real workflow, this would use jq to update the task definition JSON
+          echo "New image: mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/multicam-tracker-api:latest"
+          echo "::set-output name=taskDefinitionArn::arn:aws:ecs:${{ env.AWS_REGION }}:123456789012:task-definition/${{ env.TASK_DEFINITION_FAMILY }}:1"
+          
+          # In a real workflow, this would be:
+          # TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${{ env.TASK_DEFINITION_FAMILY }})
+          # CONTAINER_DEFINITIONS=$(echo $TASK_DEFINITION | jq -r '.taskDefinition.containerDefinitions')
+          # NEW_CONTAINER_DEFINITIONS=$(echo $CONTAINER_DEFINITIONS | jq --arg IMAGE "$ECR_REGISTRY/$ECR_REPO_PREFIX:latest" '.[0].image = $IMAGE')
+          # NEW_TASK_DEF=$(echo $TASK_DEFINITION | jq --argjson NEW_CONTAINER_DEFS "$NEW_CONTAINER_DEFINITIONS" '.taskDefinition | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | .containerDefinitions = $NEW_CONTAINER_DEFS')
+          # NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEF" | jq -r '.taskDefinition.taskDefinitionArn')
+          # echo "::set-output name=taskDefinitionArn::$NEW_TASK_DEF_ARN"
+
+      # Mock deployment to ECS
+      - name: Deploy to ECS (Mock)
+        run: |
+          echo "Simulating deployment to ECS..."
+          echo "Updating service: ${{ env.API_SERVICE_NAME }} in cluster: ${{ env.ECS_CLUSTER }}"
+          echo "Using task definition: ${{ steps.update-image.outputs.taskDefinitionArn }}"
+          
+          # In a real workflow:
+          # aws ecs update-service \
+          #   --cluster ${{ env.ECS_CLUSTER }} \
+          #   --service ${{ env.API_SERVICE_NAME }} \
+          #   --task-definition ${{ steps.update-image.outputs.taskDefinitionArn }} \
+          #   --force-new-deployment
+
+      # Mock waiting for service stability
+      - name: Wait for service stability (Mock)
+        run: |
+          echo "Simulating waiting for ECS service stability..."
+          echo "This would normally use: aws ecs wait services-stable"
+          sleep 3 # Just a short delay to simulate waiting
+          echo "Service is now stable!"
+          
+          # In a real workflow:
+          # aws ecs wait services-stable \
+          #   --cluster ${{ env.ECS_CLUSTER }} \
+          #   --services ${{ env.API_SERVICE_NAME }}
+
+      # Mock health check
+      - name: Health check (Mock)
+        run: |
+          echo "Simulating health check of deployed API..."
+          echo "In a real deployment, this would:"
+          echo "1. Find the ALB DNS name"
+          echo "2. Make an HTTP request to the health endpoint"
+          echo "3. Verify response is 200 OK"
+          
+          echo "Mock health check passed with status 200"
+          
+          # In a real workflow, this would be a complex set of commands to:
+          # 1. Get the ALB DNS from the ECS service
+          # 2. Make an HTTP request to the health endpoint
+          # 3. Check for a 200 response

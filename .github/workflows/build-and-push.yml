@@ -1,0 +1,102 @@
+name: Build and Push MultiCamTrackerAPI (Mock)
+
+# =======================================================================
+# MOCK WORKFLOW FOR DEMONSTRATION PURPOSES
+# =======================================================================
+# This is a DEMONSTRATION workflow that simulates building and pushing
+# Docker images without actually connecting to ECR or any live services.
+# 
+# TO IMPLEMENT REAL DEPLOYMENT:
+# 1. Set up AWS IAM credentials with ECR push permissions
+# 2. Add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as repository secrets
+# 3. Update the AWS_REGION and ECR_REPO_PREFIX variables below
+# 4. Remove the "exit 0" commands and uncomment the real commands
+# =======================================================================
+
+# Trigger on push to main and version tags
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*.*.*' ]
+
+env:
+  # CUSTOMIZE: Change these variables to match your AWS environment
+  AWS_REGION: us-east-1  # Replace with your AWS region
+  ECR_REPO_PREFIX: multicam-tracker-api  # Replace with your ECR repository name
+
+jobs:
+  build:
+    name: Build and Push Images (Mock)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      # Mock AWS credentials configuration
+      - name: Configure AWS credentials (Mock)
+        run: |
+          echo "Simulating AWS credential configuration..."
+          echo "In a real workflow, this would use aws-actions/configure-aws-credentials@v2"
+          # In a real workflow, you would use:
+          # uses: aws-actions/configure-aws-credentials@v2
+          # with:
+          #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          #   aws-region: ${{ env.AWS_REGION }}
+
+      # Mock ECR login
+      - name: Login to Amazon ECR (Mock)
+        id: login-ecr
+        run: |
+          echo "Simulating ECR login..."
+          echo "::set-output name=registry::mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          # In a real workflow, you would use:
+          # uses: aws-actions/amazon-ecr-login@v1
+
+      # Mock build steps
+      - name: Build API image (Mock)
+        run: |
+          echo "Simulating Docker build process..."
+          echo "Building image: mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO_PREFIX }}:latest"
+          
+          # In a real workflow:
+          # docker build -t $ECR_REGISTRY/$ECR_REPO_PREFIX:latest .
+          
+          echo "Tagging image with commit SHA..."
+          COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          echo "Tag: mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO_PREFIX }}:$COMMIT_SHA"
+          
+          # In a real workflow:
+          # docker tag $ECR_REGISTRY/$ECR_REPO_PREFIX:latest $ECR_REGISTRY/$ECR_REPO_PREFIX:$COMMIT_SHA
+          
+          # Handle version tags
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "Tag: mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO_PREFIX }}:$VERSION"
+            # In a real workflow:
+            # docker tag $ECR_REGISTRY/$ECR_REPO_PREFIX:latest $ECR_REGISTRY/$ECR_REPO_PREFIX:$VERSION
+          fi
+
+      # Mock push steps
+      - name: Push images to ECR (Mock)
+        run: |
+          echo "Simulating push to ECR..."
+          echo "Pushing: mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO_PREFIX }}:latest"
+          
+          # In a real workflow:
+          # docker push $ECR_REGISTRY/$ECR_REPO_PREFIX:latest
+          
+          COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          echo "Pushing: mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO_PREFIX }}:$COMMIT_SHA"
+          
+          # In a real workflow:
+          # docker push $ECR_REGISTRY/$ECR_REPO_PREFIX:$COMMIT_SHA
+          
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "Pushing: mock-registry.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO_PREFIX }}:$VERSION"
+            # In a real workflow:
+            # docker push $ECR_REGISTRY/$ECR_REPO_PREFIX:$VERSION
+          fi
+          
+          echo "Mock deployment complete!"
