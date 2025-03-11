@@ -1,0 +1,22 @@
+# Include all dependencies from main requirements file
+-r requirements.txt
+
+# Testing dependencies
+pytest==7.3.1
+pytest-asyncio==0.21.0
+pytest-cov==4.1.0
+httpx==0.24.0
+async-asgi-testclient==1.4.11
+asgi-lifespan==2.1.0
+mongomock==4.1.2
+pytest-mock==3.10.0
+requests==2.30.0
+
+# MongoDB driver (for bson.ObjectId)
+pymongo==4.3.3
+
+# Computer vision dependencies
+opencv-python==4.5.5.64
+
+# Load testing
+k6==0.46.0
